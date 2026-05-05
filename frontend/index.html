@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Visualización interactiva del Problema de las N-Reinas usando algoritmos de búsqueda heurística: Hill Climbing, Simulated Annealing y Tabu Search.">
+    <title>N-Reinas | Búsquedas Heurísticas</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">
+                <span class="logo-icon">♛</span>
+                <div>
+                    <h1>N-Reinas</h1>
+                    <p class="subtitle">Búsquedas Heurísticas</p>
+                </div>
+            </div>
+            <nav class="nav-tabs">
+                <button class="nav-tab active" data-tab="solver" id="tab-solver">Resolver</button>
+                <button class="nav-tab" data-tab="compare" id="tab-compare">Análisis Comparativo</button>
+            </nav>
+        </div>
+    </header>
+
+    <main class="main-content">
+        <!-- ===== SOLVER TAB ===== -->
+        <section id="section-solver" class="tab-section active">
+            <!-- Panel de Control -->
+            <div class="control-panel glass-card">
+                <h2 class="section-title">Panel de Control</h2>
+                <div class="controls-grid">
+                    <div class="control-group">
+                        <label for="select-algorithm">Algoritmo</label>
+                        <select id="select-algorithm" class="input-control">
+                            <option value="hillclimbing">🏔️ Escalando la Colina</option>
+                            <option value="simulatedannealing">🔥 Recocido Simulado</option>
+                            <option value="tabusearch">🚫 Búsqueda Tabú</option>
+                        </select>
+                    </div>
+                    <div class="control-group">
+                        <label for="input-n">Tamaño del tablero (N)</label>
+                        <div class="range-wrapper">
+                            <input type="range" id="input-n" min="4" max="16" value="8" class="range-input">
+                            <span id="n-display" class="range-value">8</span>
+                        </div>
+                    </div>
+                    <div class="control-group">
+                        <label for="input-speed">Velocidad de animación</label>
+                        <div class="range-wrapper">
+                            <input type="range" id="input-speed" min="1" max="100" value="50" class="range-input">
+                            <span id="speed-display" class="range-value">50</span>
+                        </div>
+                    </div>
+                    <div class="control-group control-actions">
+                        <button id="btn-solve" class="btn btn-primary">
+                            <span class="btn-icon">▶</span> Resolver
+                        </button>
+                        <button id="btn-stop" class="btn btn-danger" disabled>
+                            <span class="btn-icon">■</span> Detener
+                        </button>
+                    </div>
+                </div>
+                <!-- Descripción del algoritmo -->
+                <div id="algo-description" class="algo-description">
+                    <div class="algo-desc-icon">🏔️</div>
+                    <div class="algo-desc-text">
+                        <strong>Escalando la Colina (Hill Climbing)</strong>: En cada paso, evalúa todos los vecinos 
+                        y selecciona el que tiene menor número de conflictos. Se reinicia aleatoriamente si se queda 
+                        atrapado en un óptimo local.
+                    </div>
+                </div>
+            </div>
+
+            <!-- Grid principal: Tablero + Métricas -->
+            <div class="solver-grid">
+                <!-- Tablero -->
+                <div class="board-container glass-card">
+                    <h2 class="section-title">Tablero</h2>
+                    <div id="chessboard" class="chessboard"></div>
+                    <div id="board-status" class="board-status">
+                        <span class="status-dot"></span>
+                        <span id="status-text">Listo para resolver</span>
+                    </div>
+                </div>
+
+                <!-- Panel de Métricas -->
+                <div class="metrics-panel">
+                    <div class="metric-card glass-card">
+                        <div class="metric-label">Iteración</div>
+                        <div id="metric-iteration" class="metric-value">0</div>
+                    </div>
+                    <div class="metric-card glass-card">
+                        <div class="metric-label">Conflictos</div>
+                        <div id="metric-conflicts" class="metric-value">-</div>
+                    </div>
+                    <div class="metric-card glass-card">
+                        <div class="metric-label">Tiempo (ms)</div>
+                        <div id="metric-time" class="metric-value">-</div>
+                    </div>
+                    <div class="metric-card glass-card" id="metric-extra-card">
+                        <div id="metric-extra-label" class="metric-label">Reinicios</div>
+                        <div id="metric-extra" class="metric-value">0</div>
+                    </div>
+                    <div class="result-card glass-card" id="result-card" style="display:none;">
+                        <div id="result-icon" class="result-icon">✅</div>
+                        <div id="result-text" class="result-text">¡Solución encontrada!</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Gráfica de Convergencia -->
+            <div class="chart-container glass-card">
+                <h2 class="section-title">Gráfica de Convergencia</h2>
+                <canvas id="convergence-chart"></canvas>
+            </div>
+        </section>
+
+        <!-- ===== COMPARE TAB ===== -->
+        <section id="section-compare" class="tab-section">
+            <div class="compare-controls glass-card">
+                <h2 class="section-title">Configuración del Análisis Comparativo</h2>
+                <div class="controls-grid">
+                    <div class="control-group">
+                        <label for="compare-n">Tamaño N</label>
+                        <div class="range-wrapper">
+                            <input type="range" id="compare-n" min="4" max="16" value="8" class="range-input">
+                            <span id="compare-n-display" class="range-value">8</span>
+                        </div>
+                    </div>
+                    <div class="control-group">
+                        <label for="compare-runs">Ejecuciones</label>
+                        <div class="range-wrapper">
+                            <input type="range" id="compare-runs" min="5" max="50" value="30" class="range-input">
+                            <span id="compare-runs-display" class="range-value">30</span>
+                        </div>
+                    </div>
+                    <div class="control-group control-actions">
+                        <button id="btn-compare" class="btn btn-primary">
+                            <span class="btn-icon">📊</span> Ejecutar Análisis
+                        </button>
+                    </div>
+                </div>
+                <div id="compare-loading" class="loading-bar" style="display:none;">
+                    <div class="loading-progress"></div>
+                    <span>Ejecutando análisis comparativo...</span>
+                </div>
+            </div>
+
+            <!-- Resultados Comparativos -->
+            <div id="compare-results" style="display:none;">
+                <!-- Tabla de Resultados -->
+                <div class="compare-table-container glass-card">
+                    <h2 class="section-title">Resultados</h2>
+                    <table class="compare-table" id="compare-table">
+                        <thead>
+                            <tr>
+                                <th>Métrica</th>
+                                <th><span class="algo-badge hc">🏔️ Hill Climbing</span></th>
+                                <th><span class="algo-badge sa">🔥 Simulated Annealing</span></th>
+                                <th><span class="algo-badge ts">🚫 Tabu Search</span></th>
+                            </tr>
+                        </thead>
+                        <tbody id="compare-table-body"></tbody>
+                    </table>
+                </div>
+
+                <!-- Gráficas comparativas -->
+                <div class="compare-charts-grid">
+                    <div class="glass-card">
+                        <h2 class="section-title">Tasa de Éxito (%)</h2>
+                        <canvas id="chart-success"></canvas>
+                    </div>
+                    <div class="glass-card">
+                        <h2 class="section-title">Iteraciones Promedio</h2>
+                        <canvas id="chart-iterations"></canvas>
+                    </div>
+                    <div class="glass-card">
+                        <h2 class="section-title">Tiempo Promedio (ms)</h2>
+                        <canvas id="chart-time"></canvas>
+                    </div>
+                </div>
+
+
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p>Algoritmos Evolutivos y de Aprendizaje — Búsquedas Heurísticas — Ciclo IX</p>
+    </footer>
+
+    <script src="app.js"></script>
+</body>
+</html>
