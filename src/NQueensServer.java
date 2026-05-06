@@ -144,7 +144,7 @@ public class NQueensServer {
             double avgIter = (double) totalIter / runs;
             double avgTime = totalTime / runs;
 
-            return String.format(
+            return String.format(java.util.Locale.US,
                 "{\"successRate\":%.1f,\"avgIterations\":%.1f,\"avgTimeMs\":%.2f," +
                 "\"minIterations\":%d,\"maxIterations\":%d,\"minTimeMs\":%.2f,\"maxTimeMs\":%.2f,\"successes\":%d}",
                 successRate, avgIter, avgTime, minIter, maxIter, minTime, maxTime, successes

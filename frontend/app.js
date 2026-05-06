@@ -2,7 +2,7 @@
 // N-Reinas - Búsquedas Heurísticas - App
 // ============================================
 
-const API_BASE = '';
+const API_BASE = 'http://localhost:8080';
 let animationTimer = null;
 let isRunning = false;
 

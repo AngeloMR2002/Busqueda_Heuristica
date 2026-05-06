@@ -77,7 +77,7 @@ public class HillClimbing {
     }
 
     private static String formatStep(int iteration, NQueensState state, int conflicts) {
-        return String.format(
+        return String.format(java.util.Locale.US,
             "{\"iteration\":%d,\"state\":%s,\"conflicts\":%d}",
             iteration, state.toJsonArray(), conflicts
         );
@@ -85,7 +85,7 @@ public class HillClimbing {
 
     private static String buildResult(String algo, int n, boolean solved, String steps,
                                        int totalIter, double timeMs, int finalConf, String finalState) {
-        return String.format(
+        return String.format(java.util.Locale.US,
             "{\"algorithm\":\"%s\",\"n\":%d,\"solved\":%s,\"steps\":[%s]," +
             "\"totalIterations\":%d,\"timeMs\":%.2f,\"finalConflicts\":%d,\"finalState\":%s}",
             algo, n, solved, steps, totalIter, timeMs, finalConf, finalState
