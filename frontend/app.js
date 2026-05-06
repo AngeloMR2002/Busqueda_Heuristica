@@ -118,6 +118,72 @@ function renderState(state, n) {
         cell.appendChild(queen);
 
         if (conflictCols.has(c)) cell.classList.add('conflict');
+
+        // Hover: show queen movement & conflicts
+        cell.addEventListener('mouseenter', () => highlightQueenMoves(r, c, state, n));
+        cell.addEventListener('mouseleave', () => clearQueenHighlights(n));
+    }
+}
+
+// Highlight all cells a queen at (queenRow, queenCol) can reach,
+// and mark cells occupied by other queens as conflict-hover.
+function highlightQueenMoves(queenRow, queenCol, state, n) {
+    clearQueenHighlights(n);
+
+    // Build a set of occupied (row,col) pairs for quick lookup
+    const occupied = new Map(); // col -> row
+    for (let c = 0; c < n; c++) occupied.set(c, state[c]);
+
+    // Directions: horizontal (row fixed), vertical (col fixed), two diagonals
+    const directions = [
+        { dr: 0,  dc: 1  }, { dr: 0,  dc: -1 },  // horizontal
+        { dr: 1,  dc: 0  }, { dr: -1, dc: 0  },  // vertical
+        { dr: 1,  dc: 1  }, { dr: -1, dc: -1 },  // diagonal \
+        { dr: 1,  dc: -1 }, { dr: -1, dc: 1  },  // diagonal /
+    ];
+
+    const reachable = new Set();
+    const conflictCells = new Set();
+
+    for (const { dr, dc } of directions) {
+        let r = queenRow + dr;
+        let c = queenCol + dc;
+        while (r >= 0 && r < n && c >= 0 && c < n) {
+            const key = `${r}-${c}`;
+            // Check if another queen occupies this cell
+            if (occupied.has(c) && occupied.get(c) === r && c !== queenCol) {
+                conflictCells.add(key);
+                break; // queen blocks further movement in this direction
+            }
+            reachable.add(key);
+            r += dr;
+            c += dc;
+        }
+    }
+
+    // Apply CSS classes
+    for (const key of reachable) {
+        const cell = document.getElementById(`cell-${key}`);
+        if (cell) cell.classList.add('queen-move-hover');
+    }
+    for (const key of conflictCells) {
+        const cell = document.getElementById(`cell-${key}`);
+        if (cell) cell.classList.add('queen-conflict-hover');
+    }
+
+    // Highlight the queen's own cell
+    const ownCell = document.getElementById(`cell-${queenRow}-${queenCol}`);
+    if (ownCell) ownCell.classList.add('queen-self-hover');
+}
+
+function clearQueenHighlights(n) {
+    for (let r = 0; r < n; r++) {
+        for (let c = 0; c < n; c++) {
+            const cell = document.getElementById(`cell-${r}-${c}`);
+            if (cell) {
+                cell.classList.remove('queen-move-hover', 'queen-conflict-hover', 'queen-self-hover');
+            }
+        }
     }
 }
 
